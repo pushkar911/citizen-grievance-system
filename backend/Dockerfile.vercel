@@ -11,7 +11,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 # Install PHP dependencies
 COPY composer.json composer.lock ./
 
-RUN composer install --no-dev --no-interaction --no-progress --optimize-autoloader
+RUN composer install --no-dev --no-interaction --no-progress --optimize-autoloader --ignore-platform-req=ext-mongodb
 
 # Configure FrankenPHP
 COPY Caddyfile /etc/caddy/Caddyfile
