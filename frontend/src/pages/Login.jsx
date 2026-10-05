@@ -1,3 +1,4 @@
+import API_URL from "../api";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -30,7 +31,7 @@ function Login() {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/login.php",
+       `${API_URL}/login.php`,
         formData
       );
 

@@ -1,3 +1,4 @@
+import API_URL from "../api";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 
@@ -43,7 +44,7 @@ function TrackGrievance() {
 
       try {
         const response = await axios.get(
-          "http://localhost:8000/api/my_grievances.php",
+          `${API_URL}/my_grievances.php`,
           {
             params: {
               userId: user.id,
@@ -109,7 +110,7 @@ function TrackGrievance() {
 
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/track_grievance.php",
+        `${API_URL}/track_grievance.php`,
         {
           params: {
             grievanceId: selectedId,

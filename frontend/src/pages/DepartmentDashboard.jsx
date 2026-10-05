@@ -1,3 +1,4 @@
+import API_URL from "../api";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -27,8 +28,7 @@ function DepartmentDashboard() {
       setLoading(true);
 
       const response = await axios.get(
-        "http://localhost:8000/api/department_grievances.php",
-        {
+`${API_URL}/department_grievances.php`,     {
           params: {
             department: user.department,
           },
@@ -70,7 +70,7 @@ function DepartmentDashboard() {
       setMessage("");
 
       const response = await axios.put(
-        "http://localhost:8000/api/department_grievances.php",
+        `${API_URL}/department_grievances.php`,
         {
           grievanceId,
           status,

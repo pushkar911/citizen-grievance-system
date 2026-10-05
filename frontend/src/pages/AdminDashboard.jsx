@@ -1,3 +1,4 @@
+import API_URL from "../api";
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import axios from "axios";
@@ -23,7 +24,7 @@ function AdminDashboard() {
       setLoading(true);
 
       const response = await axios.get(
-        "http://localhost:8000/api/admin_grievances.php"
+        `${API_URL}/admin_grievances.php`
       );
 
       if (response.data.success) {
@@ -68,7 +69,7 @@ function AdminDashboard() {
       setMessage("");
 
       const response = await axios.put(
-        "http://localhost:8000/api/admin_grievances.php",
+        `${API_URL}/admin_grievances.php`,
         {
           grievanceId,
           status,

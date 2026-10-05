@@ -1,3 +1,4 @@
+import API_URL from "../api";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -31,7 +32,7 @@ function Register() {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/register.php",
+        `${API_URL}/register.php`,
         formData
       );
 

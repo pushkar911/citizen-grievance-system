@@ -1,3 +1,4 @@
+import API_URL from "../api";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
@@ -35,7 +36,7 @@ function MyGrievances() {
 
       try {
         const response = await axios.get(
-          "http://localhost:8000/api/my_grievances.php",
+         `${API_URL}/my_grievances.php`,
           {
             params: {
               userId: user.id,

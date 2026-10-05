@@ -1,3 +1,4 @@
+import API_URL from "../api";
 import { useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
@@ -452,7 +453,7 @@ function SubmitGrievance() {
       // =================================================
 
       const response = await axios.post(
-        "http://localhost:8000/api/submit_grievance.php",
+        `${API_URL}/submit_grievance.php`,
         {
           ...formData,
           userId: user.id,
