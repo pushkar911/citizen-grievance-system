@@ -1,12 +1,32 @@
 <?php
 
 header("Content-Type: application/json");
-header("Access-Control-Allow-Origin: https://citizen-grievance-system-zeta.vercel.app");
+
+$allowedOrigin = "https://citizen-grievance-system-zeta.vercel.app";
+
+if (isset($_SERVER["HTTP_ORIGIN"]) && $_SERVER["HTTP_ORIGIN"] === $allowedOrigin) {
+    header("Access-Control-Allow-Origin: " . $allowedOrigin);
+}
+
 header("Access-Control-Allow-Headers: Content-Type");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 
 if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
     http_response_code(200);
+    echo json_encode([
+        "success" => true
+    ]);
+    exit;
+}
+
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+    http_response_code(405);
+
+    echo json_encode([
+        "success" => false,
+        "message" => "Method not allowed"
+    ]);
+
     exit;
 }
 
@@ -14,35 +34,26 @@ require_once __DIR__ . "/../config/database.php";
 
 try {
 
-    // =====================================================
-    // GET REQUEST DATA
-    // =====================================================
+    $rawInput = file_get_contents("php://input");
 
-    $data = json_decode(
-        file_get_contents("php://input"),
-        true
-    );
+    $data = json_decode($rawInput, true);
 
-    $name = trim(
-        $data["name"] ?? ""
-    );
+    if (!is_array($data)) {
+        http_response_code(400);
 
-    $email = trim(
-        $data["email"] ?? ""
-    );
+        echo json_encode([
+            "success" => false,
+            "message" => "Invalid request data"
+        ]);
 
+        exit;
+    }
+
+    $name = trim($data["name"] ?? "");
+    $email = strtolower(trim($data["email"] ?? ""));
     $password = $data["password"] ?? "";
 
-
-    // =====================================================
-    // VALIDATE INPUT
-    // =====================================================
-
-    if (
-        $name === "" ||
-        $email === "" ||
-        $password === ""
-    ) {
+    if ($name === "" || $email === "" || $password === "") {
 
         http_response_code(400);
 
@@ -53,11 +64,6 @@ try {
 
         exit;
     }
-
-
-    // =====================================================
-    // VALIDATE EMAIL
-    // =====================================================
 
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 
@@ -71,25 +77,27 @@ try {
         exit;
     }
 
+    if (strlen($password) < 6) {
 
-    // =====================================================
-    // CONNECT TO MONGODB ATLAS
-    // =====================================================
+        http_response_code(400);
+
+        echo json_encode([
+            "success" => false,
+            "message" => "Password must contain at least 6 characters"
+        ]);
+
+        exit;
+    }
 
     $db = getDatabase();
 
     $users = $db->users;
 
-
-    // =====================================================
-    // CHECK IF EMAIL ALREADY EXISTS
-    // =====================================================
-
     $existingUser = $users->findOne([
         "email" => $email
     ]);
 
-    if ($existingUser) {
+    if ($existingUser !== null) {
 
         http_response_code(409);
 
@@ -101,67 +109,37 @@ try {
         exit;
     }
 
-
-    // =====================================================
-    // HASH PASSWORD
-    // =====================================================
-
     $hashedPassword = password_hash(
         $password,
         PASSWORD_DEFAULT
     );
 
-
-    // =====================================================
-    // CREATE USER
-    // =====================================================
-
     $result = $users->insertOne([
-
         "name" => $name,
-
         "email" => $email,
-
         "password" => $hashedPassword,
-
         "role" => "citizen",
-
-        "createdAt" =>
-            new \MongoDB\BSON\UTCDateTime()
-
+        "createdAt" => new \MongoDB\BSON\UTCDateTime()
     ]);
 
+    if (!$result->isAcknowledged()) {
 
-    // =====================================================
-    // SUCCESS RESPONSE
-    // =====================================================
+        throw new Exception("MongoDB could not create the account.");
+    }
 
     echo json_encode([
-
         "success" => true,
-
         "message" => "Registration successful",
-
-        "userId" =>
-            (string) $result->getInsertedId()
-
+        "userId" => (string) $result->getInsertedId()
     ]);
 
-} catch (Exception $e) {
-
-    // =====================================================
-    // SERVER ERROR
-    // =====================================================
+} catch (\Throwable $e) {
 
     http_response_code(500);
 
     echo json_encode([
-
         "success" => false,
-
-        "message" => "Server error",
-
+        "message" => "Registration server error",
         "error" => $e->getMessage()
-
     ]);
 }
