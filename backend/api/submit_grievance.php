@@ -13,9 +13,8 @@ if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
     exit;
 }
 
-require_once __DIR__ . "/../vendor/autoload.php";
+require_once __DIR__ . "/../config/database.php";
 
-use MongoDB\Client;
 use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\UTCDateTime;
 
@@ -180,21 +179,10 @@ try {
 
 
     // =====================================================
-    // CONNECT MONGODB
+    // CONNECT TO MONGODB ATLAS
     // =====================================================
 
-    $client = new Client(
-        "mongodb://127.0.0.1:27017"
-    );
-
-
-    // =====================================================
-    // SELECT DATABASE
-    // =====================================================
-
-    $db = $client->selectDatabase(
-        "citizen_grievance"
-    );
+    $db = getDatabase();
 
 
     // =====================================================
@@ -211,7 +199,6 @@ try {
     $text = strtolower(
         $title . " " . $description
     );
-
 
     $category = "General";
 
@@ -406,13 +393,12 @@ try {
         "resolution" => null,
 
         // DATE
-        "createdAt" =>
-           new UTCDateTime()
+        "createdAt" => new UTCDateTime()
     ];
 
 
     // =====================================================
-    // SAVE TO MONGODB
+    // SAVE TO MONGODB ATLAS
     // =====================================================
 
     $result = $grievances->insertOne(
@@ -447,7 +433,6 @@ try {
             "Submitted"
 
     ]);
-
 
 } catch (Exception $e) {
 

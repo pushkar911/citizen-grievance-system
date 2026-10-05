@@ -10,19 +10,12 @@ if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
     exit;
 }
 
-require_once __DIR__ . "/../vendor/autoload.php";
-
-use MongoDB\Client;
+require_once __DIR__ . "/../config/database.php";
 
 try {
 
-    $client = new Client(
-        "mongodb://127.0.0.1:27017"
-    );
-
-    $db = $client->selectDatabase(
-        "citizen_grievance"
-    );
+    // Connect to MongoDB Atlas
+    $db = getDatabase();
 
     $grievances = $db->grievances;
 
@@ -38,6 +31,7 @@ try {
         );
 
         if ($department === "") {
+
             http_response_code(400);
 
             echo json_encode([
@@ -128,6 +122,7 @@ try {
             $status === "" ||
             $department === ""
         ) {
+
             http_response_code(400);
 
             echo json_encode([
@@ -148,6 +143,7 @@ try {
             $status,
             $allowedStatuses
         )) {
+
             http_response_code(400);
 
             echo json_encode([

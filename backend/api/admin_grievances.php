@@ -10,14 +10,13 @@ if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
     exit;
 }
 
-require_once __DIR__ . "/../vendor/autoload.php";
-
-use MongoDB\Client;
+require_once __DIR__ . "/../config/database.php";
 
 try {
-    $client = new Client("mongodb://127.0.0.1:27017");
 
-    $db = $client->selectDatabase("citizen_grievance");
+    // Connect to MongoDB Atlas through database.php
+    $db = getDatabase();
+
     $grievances = $db->grievances;
 
     // GET — fetch all grievances
@@ -35,6 +34,7 @@ try {
         $data = [];
 
         foreach ($cursor as $grievance) {
+
             $data[] = [
                 "grievanceId" => $grievance["grievanceId"],
                 "title" => $grievance["title"],
@@ -77,6 +77,7 @@ try {
         );
 
         if ($grievanceId === "" || $status === "") {
+
             http_response_code(400);
 
             echo json_encode([
@@ -100,6 +101,7 @@ try {
         );
 
         if ($result->getMatchedCount() === 0) {
+
             http_response_code(404);
 
             echo json_encode([

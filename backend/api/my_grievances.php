@@ -10,14 +10,18 @@ if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
     exit;
 }
 
-require_once __DIR__ . "/../vendor/autoload.php";
+require_once __DIR__ . "/../config/database.php";
 
-use MongoDB\Client;
 use MongoDB\BSON\ObjectId;
 
 try {
 
+    // =====================================================
+    // ONLY GET REQUESTS
+    // =====================================================
+
     if ($_SERVER["REQUEST_METHOD"] !== "GET") {
+
         http_response_code(405);
 
         echo json_encode([
@@ -28,9 +32,22 @@ try {
         exit;
     }
 
-    $userId = trim($_GET["userId"] ?? "");
+
+    // =====================================================
+    // GET USER ID
+    // =====================================================
+
+    $userId = trim(
+        $_GET["userId"] ?? ""
+    );
+
+
+    // =====================================================
+    // VALIDATE USER ID
+    // =====================================================
 
     if ($userId === "") {
+
         http_response_code(400);
 
         echo json_encode([
@@ -41,8 +58,15 @@ try {
         exit;
     }
 
+
+    // =====================================================
+    // CONVERT USER ID TO OBJECT ID
+    // =====================================================
+
     try {
+
         $userObjectId = new ObjectId($userId);
+
     } catch (Exception $e) {
 
         http_response_code(400);
@@ -55,15 +79,19 @@ try {
         exit;
     }
 
-    $client = new Client(
-        "mongodb://127.0.0.1:27017"
-    );
 
-    $db = $client->selectDatabase(
-        "citizen_grievance"
-    );
+    // =====================================================
+    // CONNECT TO MONGODB ATLAS
+    // =====================================================
+
+    $db = getDatabase();
 
     $grievances = $db->grievances;
+
+
+    // =====================================================
+    // GET USER'S GRIEVANCES
+    // =====================================================
 
     $results = $grievances->find(
         [
@@ -76,11 +104,17 @@ try {
         ]
     );
 
+
+    // =====================================================
+    // FORMAT RESULTS
+    // =====================================================
+
     $data = [];
 
     foreach ($results as $grievance) {
 
         $data[] = [
+
             "grievanceId" =>
                 $grievance["grievanceId"] ?? "",
 
@@ -117,19 +151,36 @@ try {
         ];
     }
 
+
+    // =====================================================
+    // SUCCESS RESPONSE
+    // =====================================================
+
     echo json_encode([
+
         "success" => true,
+
         "count" => count($data),
+
         "grievances" => $data
+
     ]);
 
 } catch (Exception $e) {
 
+    // =====================================================
+    // SERVER ERROR
+    // =====================================================
+
     http_response_code(500);
 
     echo json_encode([
+
         "success" => false,
+
         "message" => "Server error",
+
         "error" => $e->getMessage()
+
     ]);
 }

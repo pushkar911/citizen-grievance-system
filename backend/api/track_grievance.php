@@ -10,13 +10,16 @@ if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
     exit;
 }
 
-require_once __DIR__ . "/../vendor/autoload.php";
-
-use MongoDB\Client;
+require_once __DIR__ . "/../config/database.php";
 
 try {
 
+    // =====================================================
+    // ONLY GET REQUESTS
+    // =====================================================
+
     if ($_SERVER["REQUEST_METHOD"] !== "GET") {
+
         http_response_code(405);
 
         echo json_encode([
@@ -26,6 +29,11 @@ try {
 
         exit;
     }
+
+
+    // =====================================================
+    // GET GRIEVANCE ID
+    // =====================================================
 
     /*
      * Accept grievanceId from the URL.
@@ -40,6 +48,11 @@ try {
         ?? ""
     );
 
+
+    // =====================================================
+    // VALIDATE GRIEVANCE ID
+    // =====================================================
+
     if ($grievanceId === "") {
 
         http_response_code(400);
@@ -52,23 +65,28 @@ try {
         exit;
     }
 
-    $client = new Client(
-        "mongodb://127.0.0.1:27017"
-    );
 
-    $db = $client->selectDatabase(
-        "citizen_grievance"
-    );
+    // =====================================================
+    // CONNECT TO MONGODB ATLAS
+    // =====================================================
+
+    $db = getDatabase();
 
     $grievances = $db->grievances;
 
-    /*
-     * Search using the exact grievance ID.
-     */
+
+    // =====================================================
+    // SEARCH GRIEVANCE
+    // =====================================================
 
     $grievance = $grievances->findOne([
         "grievanceId" => $grievanceId
     ]);
+
+
+    // =====================================================
+    // GRIEVANCE NOT FOUND
+    // =====================================================
 
     if (!$grievance) {
 
@@ -82,10 +100,14 @@ try {
         exit;
     }
 
+
+    // =====================================================
+    // PUBLIC TRACKING DATA
+    // =====================================================
+
     /*
-     * PUBLIC TRACKING DATA
-     *
      * Do NOT return:
+     *
      * - citizen name
      * - email
      * - userId
@@ -93,10 +115,13 @@ try {
      */
 
     echo json_encode([
+
         "success" => true,
+
         "message" => "Grievance found",
 
         "grievance" => [
+
             "grievanceId" =>
                 $grievance["grievanceId"] ?? "",
 
@@ -147,8 +172,12 @@ try {
     http_response_code(500);
 
     echo json_encode([
+
         "success" => false,
+
         "message" => "Server error",
+
         "error" => $e->getMessage()
+
     ]);
 }

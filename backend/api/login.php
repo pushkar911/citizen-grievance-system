@@ -10,9 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
     exit;
 }
 
-require_once __DIR__ . "/../vendor/autoload.php";
-
-use MongoDB\Client;
+require_once __DIR__ . "/../config/database.php";
 
 try {
 
@@ -31,6 +29,7 @@ try {
         $email === "" ||
         $password === ""
     ) {
+
         http_response_code(400);
 
         echo json_encode([
@@ -41,13 +40,8 @@ try {
         exit;
     }
 
-    $client = new Client(
-        "mongodb://127.0.0.1:27017"
-    );
-
-    $db = $client->selectDatabase(
-        "citizen_grievance"
-    );
+    // Connect to MongoDB Atlas
+    $db = getDatabase();
 
     $users = $db->users;
 
@@ -56,6 +50,7 @@ try {
     ]);
 
     if (!$user) {
+
         http_response_code(401);
 
         echo json_encode([
@@ -72,6 +67,7 @@ try {
             $user["password"]
         )
     ) {
+
         http_response_code(401);
 
         echo json_encode([
@@ -88,20 +84,25 @@ try {
      * Existing users without a role
      * are treated as citizens.
      */
+
     $role = $user["role"] ?? "citizen";
 
     /*
      * Department is only relevant
      * for department users.
      */
+
     $department = $user["department"] ?? null;
 
     echo json_encode([
         "success" => true,
+
         "message" => "Login successful",
 
         "user" => [
-            "id" => (string) $user["_id"],
+
+            "id" =>
+                (string) $user["_id"],
 
             "name" =>
                 $user["name"] ?? "",

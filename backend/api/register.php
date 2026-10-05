@@ -10,9 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
     exit;
 }
 
-require_once __DIR__ . "/../vendor/autoload.php";
-
-use MongoDB\Client;
+require_once __DIR__ . "/../config/database.php";
 
 try {
 
@@ -25,8 +23,14 @@ try {
         true
     );
 
-    $name = trim($data["name"] ?? "");
-    $email = trim($data["email"] ?? "");
+    $name = trim(
+        $data["name"] ?? ""
+    );
+
+    $email = trim(
+        $data["email"] ?? ""
+    );
+
     $password = $data["password"] ?? "";
 
 
@@ -69,16 +73,10 @@ try {
 
 
     // =====================================================
-    // CONNECT TO MONGODB
+    // CONNECT TO MONGODB ATLAS
     // =====================================================
 
-    $client = new Client(
-        "mongodb://127.0.0.1:27017"
-    );
-
-    $db = $client->selectDatabase(
-        "citizen_grievance"
-    );
+    $db = getDatabase();
 
     $users = $db->users;
 
@@ -128,7 +126,8 @@ try {
 
         "role" => "citizen",
 
-        "createdAt" => new \MongoDB\BSON\UTCDateTime()
+        "createdAt" =>
+            new \MongoDB\BSON\UTCDateTime()
 
     ]);
 
@@ -143,10 +142,10 @@ try {
 
         "message" => "Registration successful",
 
-        "userId" => (string) $result->getInsertedId()
+        "userId" =>
+            (string) $result->getInsertedId()
 
     ]);
-
 
 } catch (Exception $e) {
 
