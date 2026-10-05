@@ -61,18 +61,17 @@ function Register() {
       );
 
     } catch (error) {
-      console.error("Registration error:", error);
+  console.error("Registration error:", error);
 
-      if (error.response?.data?.message) {
-        setMessage(error.response.data.message);
-      } else if (error.response?.status === 409) {
-        setMessage("Email already registered.");
-      } else {
-        setMessage(
-          "Unable to create account. Please try again."
-        );
-      }
-    } finally {
+  const data = error.response?.data;
+
+  setMessage(
+    data?.error ||
+    data?.message ||
+    error.message ||
+    "Unable to create account. Please try again."
+  );
+}finally {
       setLoading(false);
     }
   };
