@@ -1,11 +1,9 @@
 import API_URL from "../api";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import axios from "axios";
 
 function Register() {
-  const navigate = useNavigate();
-
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -27,27 +25,53 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!formData.name || !formData.email || !formData.password) {
+      setMessage("All fields are required.");
+      return;
+    }
+
     setLoading(true);
     setMessage("");
 
     try {
       const response = await axios.post(
         `${API_URL}/register.php`,
-        formData
+        {
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          password: formData.password,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
 
-      if (response.data.success) {
-        navigate("/login");
-      } else {
-        setMessage(response.data.message);
+      console.log("Registration response:", response.data);
+
+      if (response.data?.success === true) {
+        // Registration successful
+        window.location.href = "/login";
+        return;
       }
-    } catch (error) {
-      console.error(error);
 
       setMessage(
-        error.response?.data?.message ||
-          "Unable to create account. Please try again."
+        response.data?.message || "Registration failed."
       );
+
+    } catch (error) {
+      console.error("Registration error:", error);
+
+      if (error.response?.data?.message) {
+        setMessage(error.response.data.message);
+      } else if (error.response?.status === 409) {
+        setMessage("Email already registered.");
+      } else {
+        setMessage(
+          "Unable to create account. Please try again."
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -55,12 +79,9 @@ function Register() {
 
   return (
     <div className="auth-page">
-
       <div className="auth-card">
 
-        {/* HEADER */}
         <div className="auth-header">
-
           <div className="auth-icon">
             👤
           </div>
@@ -77,16 +98,11 @@ function Register() {
             Create your account to submit, manage and
             track your civic grievances.
           </p>
-
         </div>
 
-
-        {/* FORM */}
         <form onSubmit={handleSubmit}>
 
-          {/* NAME */}
           <div className="auth-field">
-
             <label htmlFor="name">
               Full Name
             </label>
@@ -101,13 +117,9 @@ function Register() {
               autoComplete="name"
               required
             />
-
           </div>
 
-
-          {/* EMAIL */}
           <div className="auth-field">
-
             <label htmlFor="email">
               Email Address
             </label>
@@ -122,13 +134,9 @@ function Register() {
               autoComplete="email"
               required
             />
-
           </div>
 
-
-          {/* PASSWORD */}
           <div className="auth-field">
-
             <label htmlFor="password">
               Password
             </label>
@@ -148,11 +156,8 @@ function Register() {
               Use a password that is difficult for others
               to guess.
             </small>
-
           </div>
 
-
-          {/* REGISTER BUTTON */}
           <button
             type="submit"
             className="auth-button"
@@ -170,11 +175,8 @@ function Register() {
 
         </form>
 
-
-        {/* ERROR */}
         {message && (
           <div className="auth-error">
-
             <strong>
               Registration Failed
             </strong>
@@ -182,14 +184,10 @@ function Register() {
             <p>
               {message}
             </p>
-
           </div>
         )}
 
-
-        {/* LOGIN */}
         <div className="auth-footer">
-
           <span>
             Already have an account?
           </span>{" "}
@@ -197,17 +195,13 @@ function Register() {
           <Link to="/login">
             Login
           </Link>
-
         </div>
 
-
-        {/* SECURITY INFO */}
         <div className="auth-security">
           🔒 Your account information is securely handled.
         </div>
 
       </div>
-
     </div>
   );
 }
