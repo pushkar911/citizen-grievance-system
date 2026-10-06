@@ -1,7 +1,7 @@
 <?php
 
 header("Content-Type: application/json");
-https://citizen-grievance-system-zeta.vercel.app
+header("Access-Control-Allow-Origin: https://citizen-grievance-system-zeta.vercel.app");
 header("Access-Control-Allow-Headers: Content-Type");
 header("Access-Control-Allow-Methods: GET, PUT, OPTIONS");
 
@@ -14,7 +14,7 @@ require_once __DIR__ . "/../config/database.php";
 
 try {
 
-    // Connect to MongoDB Atlas through database.php
+    // Connect to MongoDB Atlas
     $db = getDatabase();
 
     $grievances = $db->grievances;
@@ -36,15 +36,15 @@ try {
         foreach ($cursor as $grievance) {
 
             $data[] = [
-                "grievanceId" => $grievance["grievanceId"],
-                "title" => $grievance["title"],
-                "description" => $grievance["description"],
-                "location" => $grievance["location"],
-                "category" => $grievance["category"],
-                "priority" => $grievance["priority"],
-                "department" => $grievance["department"],
-                "status" => $grievance["status"],
-                "resolution" => $grievance["resolution"]
+                "grievanceId" => $grievance["grievanceId"] ?? "",
+                "title" => $grievance["title"] ?? "",
+                "description" => $grievance["description"] ?? "",
+                "location" => $grievance["location"] ?? "",
+                "category" => $grievance["category"] ?? "",
+                "priority" => $grievance["priority"] ?? "",
+                "department" => $grievance["department"] ?? "",
+                "status" => $grievance["status"] ?? "Submitted",
+                "resolution" => $grievance["resolution"] ?? null
             ];
         }
 
@@ -119,6 +119,14 @@ try {
 
         exit;
     }
+
+    // Unsupported method
+    http_response_code(405);
+
+    echo json_encode([
+        "success" => false,
+        "message" => "Method not allowed"
+    ]);
 
 } catch (Exception $e) {
 
